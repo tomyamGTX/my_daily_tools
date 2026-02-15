@@ -26,7 +26,6 @@ class _NotesPageState extends State<NotesPage> {
   /// ================= LOAD =================
   void loadNotes() {
     final data = box.get("notes");
-
     if (data != null) {
       notes = List<Map<String, dynamic>>.from(
         (data as List).map((item) => Map<String, dynamic>.from(item)),
@@ -51,9 +50,9 @@ class _NotesPageState extends State<NotesPage> {
 
     saveNotes();
     _controller.clear();
-    _focusNode.requestFocus();
+    Navigator.pop(context);
 
-    /// Auto scroll
+    /// Auto scroll to latest
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -65,10 +64,70 @@ class _NotesPageState extends State<NotesPage> {
     });
   }
 
-  /// ================= DELETE =================
-  void deleteNote(int index) {
-    setState(() => notes.removeAt(index));
-    saveNotes();
+  /// ================= MODAL INPUT =================
+  void showAddNoteSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const Text(
+                "Add New Note",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                autofocus: true,
+                maxLines: 5,
+                decoration: const InputDecoration(
+                  hintText: "Write your note here...",
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => addNote(),
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: addNote,
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Note"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// ================= EDIT =================
@@ -98,7 +157,6 @@ class _NotesPageState extends State<NotesPage> {
                 notes[index]["content"] = _controller.text.trim();
                 notes[index]["date"] = DateTime.now().toString();
               });
-
               saveNotes();
               _controller.clear();
               Navigator.pop(context);
@@ -110,15 +168,19 @@ class _NotesPageState extends State<NotesPage> {
     );
   }
 
+  /// ================= DELETE =================
+  void deleteNote(int index) {
+    setState(() => notes.removeAt(index));
+    saveNotes();
+  }
+
   /// ================= REORDER =================
   void reorderNotes(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) newIndex -= 1;
-
       final item = notes.removeAt(oldIndex);
       notes.insert(newIndex, item);
     });
-
     saveNotes();
   }
 
@@ -140,20 +202,11 @@ class _NotesPageState extends State<NotesPage> {
               "No Notes Yet",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 10),
             Text(
-              "Tap the + button below\nto add your first note below ✍️",
+              "Tap the + button below\nto add your first note ✍️",
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () {
-                FocusScope.of(context).requestFocus(_focusNode);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text("Add Note"),
             ),
           ],
         ),
@@ -164,141 +217,110 @@ class _NotesPageState extends State<NotesPage> {
   /// ================= UI =================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: const Text("Notes")),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(title: const Text("Notes")),
 
-      body: Column(
-        children: [
-          /// ===== LIST =====
-          Expanded(
-            child: notes.isEmpty
-                ? _buildEmptyState()
-                : ReorderableListView.builder(
-                    scrollController: _scrollController,
-                    itemCount: notes.length,
-                    onReorder: reorderNotes,
-                    buildDefaultDragHandles: false,
-                    itemBuilder: (context, index) {
-                      final note = notes[index];
+        /// ===== LIST =====
+        body: notes.isEmpty
+            ? _buildEmptyState()
+            : ReorderableListView.builder(
+                scrollController: _scrollController,
+                itemCount: notes.length,
+                onReorder: reorderNotes,
+                buildDefaultDragHandles: false,
+                itemBuilder: (context, index) {
+                  final note = notes[index];
 
-                      return Container(
-                        key: ValueKey(note["id"]),
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-
-                        child: Material(
-                          elevation: 2,
-                          borderRadius: BorderRadius.circular(16),
-                          color: Theme.of(context).cardColor,
-
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () => editNote(index),
-
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 12,
-                              ),
-
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  /// 📝 NOTE CONTENT
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          note["content"],
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-
-                                        const SizedBox(height: 6),
-
-                                        Text(
-                                          note["date"].toString().split(".")[0],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  /// ✏️ EDIT
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.edit_outlined,
-                                      color: Colors.blue.shade400,
-                                    ),
-                                    onPressed: () => editNote(index),
-                                  ),
-
-                                  /// 🗑 DELETE
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red.shade400,
-                                    ),
-                                    onPressed: () => deleteNote(index),
-                                  ),
-
-                                  /// ↕️ DRAG
-                                  ReorderableDragStartListener(
-                                    index: index,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: Icon(
-                                        Icons.drag_indicator,
-                                        color: Colors.grey.shade500,
+                  return Container(
+                    key: ValueKey(note["id"]),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    child: Material(
+                      elevation: 2,
+                      borderRadius: BorderRadius.circular(16),
+                      color: Theme.of(context).cardColor,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => editNote(index),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      note["content"],
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      note["date"].toString().split(".")[0],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  color: Colors.blue.shade400,
+                                ),
+                                onPressed: () => editNote(index),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red.shade400,
+                                ),
+                                onPressed: () => deleteNote(index),
+                              ),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: Icon(
+                                    Icons.drag_indicator,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-          ),
-
-          /// ===== INPUT BAR (Same style as Todo) =====
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    maxLines: 1,
-                    decoration: const InputDecoration(
-                      hintText: "Write a new note...",
-                      border: OutlineInputBorder(),
+                      ),
                     ),
-                    onSubmitted: (_) => addNote(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: addNote,
-                  child: const Icon(Icons.add),
-                ),
-              ],
+                  );
+                },
+              ),
+
+        /// ===== BOTTOM ADD BUTTON =====
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ElevatedButton.icon(
+            onPressed: showAddNoteSheet,
+            icon: const Icon(Icons.add),
+            label: const Text("Add Note"),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

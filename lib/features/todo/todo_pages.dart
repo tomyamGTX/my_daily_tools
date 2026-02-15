@@ -51,7 +51,7 @@ class _TodoPageState extends State<TodoPage> {
 
     saveTodos();
     _controller.clear();
-    _focusNode.requestFocus();
+    Navigator.pop(context);
 
     /// Auto scroll to latest
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -63,6 +63,71 @@ class _TodoPageState extends State<TodoPage> {
         );
       }
     });
+  }
+
+  /// ================= MODAL INPUT =================
+  void showAddTodoSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const Text(
+                "Add New Task",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: "Enter task...",
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => addTodo(),
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: addTodo,
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Task"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   /// ================= TOGGLE =================
@@ -119,14 +184,6 @@ class _TodoPageState extends State<TodoPage> {
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600),
             ),
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: () {
-                FocusScope.of(context).requestFocus(_focusNode);
-              },
-              icon: const Icon(Icons.add),
-              label: const Text("Add Task"),
-            ),
           ],
         ),
       ),
@@ -136,141 +193,155 @@ class _TodoPageState extends State<TodoPage> {
   /// ================= UI =================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: const Text("To-Do List")),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(title: const Text("To-Do List")),
 
-      body: Column(
-        children: [
-          /// ===== LIST =====
-          Expanded(
-            child: todos.isEmpty
-                ? _buildEmptyState()
-                : ReorderableListView.builder(
-                    scrollController: _scrollController,
-                    itemCount: todos.length,
-                    onReorder: reorderTodo,
-                    buildDefaultDragHandles: false,
-                    itemBuilder: (context, index) {
-                      final todo = todos[index];
+        /// ===== LIST =====
+        body: todos.isEmpty
+            ? _buildEmptyState()
+            : ReorderableListView.builder(
+                scrollController: _scrollController,
+                itemCount: todos.length,
+                onReorder: reorderTodo,
+                buildDefaultDragHandles: false,
+                itemBuilder: (context, index) {
+                  final todo = todos[index];
 
-                      return Container(
-                        key: ValueKey(todo["id"]),
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                  return Container(
+                    key: ValueKey(todo["id"]),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
 
-                        child: Material(
-                          elevation: 2,
-                          borderRadius: BorderRadius.circular(16),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(18),
+                        color: todo["done"]
+                            ? Colors.green.shade50
+                            : Theme.of(context).cardColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        border: Border.all(
                           color: todo["done"]
-                              ? Colors.grey.shade100
-                              : Theme.of(context).cardColor,
+                              ? Colors.green.shade200
+                              : Colors.grey.shade200,
+                        ),
+                      ),
 
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () => toggleTodo(index),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () => toggleTodo(index),
 
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+
+                          child: Row(
+                            children: [
+                              /// ===== STATUS INDICATOR =====
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 250),
+                                width: 10,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: todo["done"]
+                                      ? Colors.green
+                                      : Colors.blueAccent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
 
-                              child: Row(
-                                children: [
-                                  /// ✅ CHECKBOX
-                                  Transform.scale(
-                                    scale: 1.2,
-                                    child: Checkbox(
-                                      value: todo["done"],
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      onChanged: (_) => toggleTodo(index),
-                                    ),
+                              const SizedBox(width: 12),
+
+                              /// ===== CHECKBOX =====
+                              Transform.scale(
+                                scale: 1.1,
+                                child: Checkbox(
+                                  value: todo["done"],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
-
-                                  const SizedBox(width: 8),
-
-                                  /// 📝 TITLE
-                                  Expanded(
-                                    child: AnimatedOpacity(
-                                      duration: const Duration(
-                                        milliseconds: 200,
-                                      ),
-                                      opacity: todo["done"] ? 0.6 : 1,
-
-                                      child: Text(
-                                        todo["title"],
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          decoration: todo["done"]
-                                              ? TextDecoration.lineThrough
-                                              : TextDecoration.none,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  /// 🗑 DELETE
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red.shade400,
-                                    ),
-                                    onPressed: () => deleteTodo(index),
-                                  ),
-
-                                  /// ↕️ DRAG HANDLE
-                                  ReorderableDragStartListener(
-                                    index: index,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 4),
-                                      child: Icon(
-                                        Icons.drag_indicator,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                  onChanged: (_) => toggleTodo(index),
+                                ),
                               ),
-                            ),
+
+                              const SizedBox(width: 6),
+
+                              /// ===== TITLE =====
+                              Expanded(
+                                child: AnimatedDefaultTextStyle(
+                                  duration: const Duration(milliseconds: 200),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: todo["done"]
+                                        ? Colors.grey
+                                        : Colors.black87,
+                                    decoration: todo["done"]
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                                  child: Text(todo["title"]),
+                                ),
+                              ),
+
+                              /// ===== DELETE =====
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red.shade400,
+                                  ),
+                                  onPressed: () => deleteTodo(index),
+                                ),
+                              ),
+
+                              const SizedBox(width: 4),
+
+                              /// ===== DRAG HANDLE =====
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Icon(
+                                  Icons.drag_indicator_rounded,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-          ),
-
-          /// ===== INPUT BAR =====
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    maxLines: 1,
-                    decoration: const InputDecoration(
-                      hintText: "Add new task...",
-                      border: OutlineInputBorder(),
+                      ),
                     ),
-                    onSubmitted: (_) => addTodo(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: addTodo,
-                  child: const Icon(Icons.add),
-                ),
-              ],
+                  );
+                },
+              ),
+
+        /// ===== BOTTOM ADD BUTTON =====
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(12),
+          child: ElevatedButton.icon(
+            onPressed: showAddTodoSheet,
+            icon: const Icon(Icons.add),
+            label: const Text("Add Task"),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
