@@ -1,16 +1,27 @@
-# my_daily_tools
+# Privacy Policy – My Daily Tools
 
-A new Flutter project.
+Last updated: 15 Feb 2026
 
-## Getting Started
+## Introduction
+My Daily Tools respects your privacy. This app is designed to help users manage daily tasks, notes, and shopping lists.
 
-This project is a starting point for a Flutter application.
+## Information We Collect
+We do not collect, store, or share any personal information.
 
-A few resources to get you started if this is your first Flutter project:
+## Local Data Storage
+All data you enter (tasks, notes, shopping items) is stored locally on your device using secure local storage.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Third-Party Services
+This app may use platform services such as Google Play for app distribution. No personal data is collected by the app itself.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Data Security
+Your data remains on your device unless you choose to remove the app.
+
+## Children’s Privacy
+This app does not knowingly collect data from children.
+
+## Changes to This Policy
+We may update this policy. Updates will be posted on this page.
+
+## Contact
+Email: hakimimdnoor90@email.com
