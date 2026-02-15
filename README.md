@@ -1,27 +1,85 @@
-# Privacy Policy – My Daily Tools
+# Privacy Policy
 
-Last updated: 15 Feb 2026
+**Last updated:** [15 Feb 2026]
 
-## Introduction
-My Daily Tools respects your privacy. This app is designed to help users manage daily tasks, notes, and shopping lists.
+Thank you for using **My Daily Tools**.
 
-## Information We Collect
-We do not collect, store, or share any personal information.
+This Privacy Policy explains how we collect, use, and protect your information when you use our mobile application.
 
-## Local Data Storage
-All data you enter (tasks, notes, shopping items) is stored locally on your device using secure local storage.
+---
 
-## Third-Party Services
-This app may use platform services such as Google Play for app distribution. No personal data is collected by the app itself.
+## 1. Information We Collect
 
-## Data Security
-Your data remains on your device unless you choose to remove the app.
+We do **not collect personal data** from users.
 
-## Children’s Privacy
-This app does not knowingly collect data from children.
+All data you create inside the app such as:
 
-## Changes to This Policy
-We may update this policy. Updates will be posted on this page.
+* Tasks
+* Notes
+* Shopping items
 
-## Contact
-Email: hakimimdnoor90@email.com
+are stored **locally on your device only** using secure local storage.
+
+We do not upload this data to any server.
+
+---
+
+## 2. Permissions
+
+Our app may request basic permissions only when necessary for app functionality.
+
+We do not access:
+
+* Contacts
+* Photos
+* Location
+* Camera
+* Microphone
+
+unless explicitly stated in future updates.
+
+---
+
+## 3. Third-Party Services
+
+The app may use trusted third-party services such as:
+
+* Google Play Services (for app distribution)
+* Firebase (if authentication or analytics is added)
+
+These services may collect anonymized technical data according to their own privacy policies.
+
+---
+
+## 4. Data Security
+
+Since your data is stored locally on your device:
+
+* You have full control of your data
+* Uninstalling the app may delete stored data
+* We do not store or back up your information externally
+
+---
+
+## 5. Children’s Privacy
+
+This app does not knowingly collect personal information from children under 13.
+
+---
+
+## 6. Changes to This Policy
+
+We may update this Privacy Policy from time to time.
+Any changes will be posted on this page with an updated revision date.
+
+---
+
+## 7. Contact Us
+
+If you have any questions about this Privacy Policy, you may contact us at:
+
+**Email:** [[hakimimdnoor90@gmail.com](mailto:hakimimdnoor90@gmail.com)]
+
+---
+
+**By using the app, you agree to this Privacy Policy.**
